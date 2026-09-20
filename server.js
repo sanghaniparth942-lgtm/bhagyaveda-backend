@@ -113,7 +113,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div class="group">
             <label class="block text-xs font-mono text-accent-gold/70 uppercase tracking-widest mb-2">તમારું પૂરૂં નામ *</label>
-            <input type="text" id="userName" required placeholder="દા.ત. રાહુલ શર્મા" class="w-full bg-cosmic-950/80 border border-slate-700/80 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-accent-amber transition-all placeholder:text-slate-700">
+            <input type="text" id="userName" required placeholder="દા.ત. રાહુલ શર્મા" autocomplete="off" class="w-full bg-cosmic-950/80 border border-slate-700/80 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-accent-amber transition-all placeholder:text-slate-600">
           </div>
           <div class="group">
             <label class="block text-xs font-mono text-accent-gold/70 uppercase tracking-widest mb-2">જન્મ તારીખ *</label>
@@ -437,26 +437,35 @@
         return;
       }
 
-      const name = clientData.name || 'Customer';
-      
+      // NPCI UPI સુસંગત નામ (Clean ASCII format જેથી UPI ક્રેશ ન થાય)
+      const rawName = (clientData.name || '').trim();
+      const isPureAscii = /^[\x20-\x7E]+$/.test(rawName);
+      const safePayerName = isPureAscii && rawName.length > 0 ? rawName : "Bhagyaveda Devotee";
+
       var options = {
-        "key": "rzp_live_TeGqB4epR2sZ2I", 
-        "amount": "9900",
+        "key": "rzp_live_TeGqB4epR2sZ2I", // તમારી અસલી લાઈવ કી
+        "amount": "9900", // ₹99
         "currency": "INR",
-        "name": "ભાગ્યવેદ (Bhagyaveda)",
-        "description": "સંપૂર્ણ નવરાત્રિ અહેવાલ - Instant Access",
+        "name": "Bhagyaveda", // Clean ASCII - બેંક સર્વર ક્યારેય રિજેક્ટ નહીં કરે
+        "description": "Navratri Vedic Transit Report", // Clean ASCII
         "handler": function (response) {
           isUserPaid = true;
           document.getElementById('paywallBox').classList.add('hidden');
           fetchPaidGeminiPrediction();
         },
-        "prefill": { "name": name },
-        "theme": { "color": "#ee4444" }
+        "prefill": {
+          "name": safePayerName
+        },
+        "theme": {
+          "color": "#ee4444"
+        }
       };
 
       var rzp1 = new Razorpay(options);
       rzp1.on('payment.failed', function (response){
-        alert("પેમેન્ટ નિષ્ફળ થયું: " + (response.error.description || "કૃપા કરીને ફરી પ્રયાસ કરો."));
+        console.error("Payment Error:", response.error);
+        const errReason = response.error.description || "બેંક દ્વારા પેમેન્ટ સ્વીકારાયું નથી.";
+        alert("પેમેન્ટ નિષ્ફળ થયું: " + errReason + "\n(જો તમે હમણાં જ ₹૯૯ ચૂકવ્યા હોય, તો કૃપા કરીને ૫ મિનિટ પછી અથવા અન્ય કોઈ UPI એપ દ્વારા પ્રયાસ કરો)");
       });
       rzp1.open();
     }
@@ -478,17 +487,21 @@
           body: JSON.stringify(clientData)
         });
 
+        if (!response.ok) {
+          throw new Error(`સર્વર પ્રતિસાદ એરર: ${response.status}`);
+        }
+
         const resData = await response.json();
 
-        if (!resData.success) {
+        if (!resData.success || !resData.data) {
           throw new Error(resData.message || 'AI અહેવાલ બનાવવામાં વિલંબ થયો');
         }
 
         const aiData = resData.data;
 
-        document.getElementById('premiumCareer').innerHTML = aiData.premCareer;
-        document.getElementById('premiumLove').innerHTML = aiData.premLove;
-        document.getElementById('premiumRemedies').innerHTML = aiData.premRemedies;
+        document.getElementById('premiumCareer').innerHTML = aiData.premCareer || "માહિતી તૈયાર થઈ રહી છે...";
+        document.getElementById('premiumLove').innerHTML = aiData.premLove || "માહિતી તૈયાર થઈ રહી છે...";
+        document.getElementById('premiumRemedies').innerHTML = aiData.premRemedies || "માહિતી તૈયાર થઈ રહી છે...";
 
         paidLoader.classList.add('hidden');
         const premiumSection = document.getElementById('premiumUnlokedSection');
@@ -498,7 +511,7 @@
 
       } catch (err) {
         console.error("Gemini Error:", err);
-        paidStatus.innerText = "સર્વર સ્લીપમાંથી જાગવામાં સહેજ વાર લાગી રહી છે. ચિંતા કરશો નહીં, તમારા પૈસા સફળતાપૂર્વક ચૂકવાઈ ગયા છે. નીચે ક્લિક કરો:";
+        paidStatus.innerText = "સર્વર સ્લીપમાંથી જાગવામાં સહેજ વાર લાગી રહી છે. ચિંતા કરશો નહીં, તમારા ₹૯૯ સફળતાપૂર્વક ચૂકવાઈ ગયા છે. નીચે આપેલા બટન પર ક્લિક કરો:";
         retryBtn.classList.remove('hidden');
       }
     }
