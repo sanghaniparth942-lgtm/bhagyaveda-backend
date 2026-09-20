@@ -28,7 +28,6 @@ app.post('/api/get-prediction', async (req, res) => {
       generationConfig: { responseMimeType: "application/json" }
     });
 
-    // સ્માર્ટ, વાસ્તવિક, આશાસ્પદ અને પોલિસી-ફ્રેન્ડલી પ્રોમ્પ્ટ
     const prompt = `
 તમે એક ઉચ્ચ આધ્યાત્મિક અને શાસ્ત્રોક્ત વૈદિક જ્યોતિષ માર્ગદર્શક છો.
 યુઝરે ₹૯૯ ચૂકવીને નવરાત્રિ મહા ગ્રહ પરિવર્તનનો અહેવાલ મેળવ્યો છે.
