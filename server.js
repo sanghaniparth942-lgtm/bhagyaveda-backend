@@ -324,12 +324,10 @@
     let clientData = {};
     let isUserPaid = false;
 
-    // નામના અક્ષર પરથી સાચી વૈદિક નામ રાશિ
     function getNaamRashi(name) {
       if (!name) return "મેષ";
       const clean = name.trim().toUpperCase();
       const ch = clean.charAt(0);
-
       const rashiMap = [
         { rashi: "મેષ", chars: ["A", "L", "E", "I", "O", "અ", "લ", "ઇ", "ઈ", "એ"] },
         { rashi: "વૃષભ", chars: ["B", "V", "U", "W", "બ", "વ", "ઉ", "ઊ"] },
@@ -344,20 +342,17 @@
         { rashi: "કુંભ", chars: ["G", "S", "SH", "ગ", "શ", "ષ", "સ"] },
         { rashi: "મીન", chars: ["D", "CH", "Z", "TH", "દ", "ચ", "ઝ", "થ"] }
       ];
-
       for (const item of rashiMap) {
         if (item.chars.some(c => clean.startsWith(c) || ch === c)) return item.rashi;
       }
       return "સિંહ";
     }
 
-    // જન્મતારીખ પરથી સૂર્ય સિદ્ધાંત મુજબ સૂર્ય રાશિ
     function getSuryaRashi(dob) {
       if (!dob) return "મેષ";
       const parts = dob.split('-');
       const month = parseInt(parts[1], 10);
       const day = parseInt(parts[2], 10);
-
       if ((month === 1 && day >= 14) || (month === 2 && day <= 12)) return "મકર";
       if ((month === 2 && day >= 13) || (month === 3 && day <= 14)) return "કુંભ";
       if ((month === 3 && day >= 15) || (month === 4 && day <= 13)) return "મીન";
@@ -420,7 +415,6 @@
       document.getElementById('resTitle').innerText = `${name}, તમારો નવરાત્રિ રિપોર્ટ તૈયાર છે!`;
       document.getElementById('badgeNaamRashi').innerText = naamRashi;
       document.getElementById('badgeSuryaRashi').innerText = suryaRashi;
-
       document.getElementById('paraIntro').innerText = 
         `${name}જી, વૈદિક જ્યોતિષ મુજબ તમારી નામ રાશિ "${naamRashi}" અને સૂર્ય કુંડળી રાશિ "${suryaRashi}" નું વિશેષ સંયોજન રચાય છે. આ નવરાત્રિ દરમિયાન ગ્રહોની દિશા બદલાઈ રહી છે, જેની સીધી અસર તમારા જીવનના મુખ્ય ૩ પાસાંઓ પર પડી રહી છે:`;
 
@@ -437,24 +431,20 @@
         return;
       }
 
-      // NPCI UPI સુસંગત નામ (Clean ASCII format જેથી UPI ક્રેશ ન થાય)
-      const rawName = (clientData.name || '').trim();
-      const isPureAscii = /^[\x20-\x7E]+$/.test(rawName);
-      const safePayerName = isPureAscii && rawName.length > 0 ? rawName : "Bhagyaveda Devotee";
-
+      // NOTE: Haman Test Key thi j payment success thashe karan ke taru Live Account haju approve nathi thayu.
       var options = {
-        "key": "rzp_live_TeGqB4epR2sZ2I", // તમારી અસલી લાઈવ કી
-        "amount": "9900", // ₹99
+        "key": "rzp_test_YOUR_TEST_KEY_HERE", // <-- Ahiya 'Test Key' muki de
+        "amount": "9900",
         "currency": "INR",
-        "name": "Bhagyaveda", // Clean ASCII - બેંક સર્વર ક્યારેય રિજેક્ટ નહીં કરે
-        "description": "Navratri Vedic Transit Report", // Clean ASCII
+        "name": "Bhagyaveda",
+        "description": "Vedic Astrology Scan",
         "handler": function (response) {
           isUserPaid = true;
           document.getElementById('paywallBox').classList.add('hidden');
           fetchPaidGeminiPrediction();
         },
         "prefill": {
-          "name": safePayerName
+          "name": clientData.name || "User"
         },
         "theme": {
           "color": "#ee4444"
@@ -464,8 +454,7 @@
       var rzp1 = new Razorpay(options);
       rzp1.on('payment.failed', function (response){
         console.error("Payment Error:", response.error);
-        const errReason = response.error.description || "બેંક દ્વારા પેમેન્ટ સ્વીકારાયું નથી.";
-        alert("પેમેન્ટ નિષ્ફળ થયું: " + errReason + "\n(જો તમે હમણાં જ ₹૯૯ ચૂકવ્યા હોય, તો કૃપા કરીને ૫ મિનિટ પછી અથવા અન્ય કોઈ UPI એપ દ્વારા પ્રયાસ કરો)");
+        alert("પેમેન્ટ નિષ્ફળ થયું. મહેરબાની કરીને ફરી પ્રયાસ કરો.");
       });
       rzp1.open();
     }
@@ -488,7 +477,7 @@
         });
 
         if (!response.ok) {
-          throw new Error(`સર્વર પ્રતિસાદ એરર: ${response.status}`);
+          throw new Error(`Server Error: ${response.status}`);
         }
 
         const resData = await response.json();
@@ -511,7 +500,7 @@
 
       } catch (err) {
         console.error("Gemini Error:", err);
-        paidStatus.innerText = "સર્વર સ્લીપમાંથી જાગવામાં સહેજ વાર લાગી રહી છે. ચિંતા કરશો નહીં, તમારા ₹૯૯ સફળતાપૂર્વક ચૂકવાઈ ગયા છે. નીચે આપેલા બટન પર ક્લિક કરો:";
+        paidStatus.innerText = "સર્વર સ્લીપમાંથી જાગવામાં સહેજ વાર લાગી રહી છે. ચિંતા કરશો નહીં, નીચે આપેલા બટન પર ક્લિક કરો:";
         retryBtn.classList.remove('hidden');
       }
     }
@@ -519,18 +508,14 @@
     function startNewScan() {
       isUserPaid = false;
       clientData = {};
-
       document.getElementById('userName').value = '';
       document.getElementById('userDob').value = '';
-
       document.getElementById('resultScreen').classList.add('hidden');
       document.getElementById('premiumUnlokedSection').classList.add('hidden');
       document.getElementById('aiPaidLoader').classList.add('hidden');
       document.getElementById('paywallBox').classList.remove('hidden');
-
       document.getElementById('heroSection').style.display = 'block';
       document.getElementById('calculatorCard').classList.remove('hidden');
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
       lucide.createIcons();
     }
