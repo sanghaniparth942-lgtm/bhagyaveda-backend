@@ -1,7 +1,8 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { GoogleGenAI } = require('@google/genai');
+import dotenv from 'dotenv';
+dotenv.config();
+import express from 'express';
+import cors from 'cors';
+import { GoogleGenAI } from '@google/genai';
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.post('/api/get-prediction', async (req, res) => {
   try {
     const { name, dob, time, gender, naamRashi, suryaRashi } = req.body;
 
-    // Gemini માટે પ્રીમિયમ પ્રોમ્પ્ટ (સૂચના)
+    // Gemini માટે પ્રીમિયમ પ્રોમ્પ્ટ
     const prompt = `
       એક અનુભવી વૈદિક જ્યોતિષી તરીકે નીચેની વ્યક્તિ માટે નવરાત્રિના મહા ગ્રહ પરિવર્તનને આધારે પ્રીમિયમ રાશિફળ (Gujarati language માં) તૈયાર કરો.
       નામ: ${name}
@@ -45,7 +46,6 @@ app.post('/api/get-prediction', async (req, res) => {
       }
     });
 
-    // Gemini તરફથી મળેલા JSON રિસ્પોન્સને પાર્સ કરો
     const resultText = response.text;
     const aiData = JSON.parse(resultText);
 
@@ -64,7 +64,6 @@ app.post('/api/get-prediction', async (req, res) => {
   }
 });
 
-// સર્વર ચાલુ કરો
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Bhagyaveda Backend is running on port ${PORT}`);
