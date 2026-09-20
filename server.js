@@ -440,7 +440,7 @@
       const name = clientData.name || 'Customer';
       
       var options = {
-        "key": "YOUR_ACTUAL_RAZORPAY_KEY_HERE", 
+        "key": "rzp_live_TeGqB4epR2sZ2I", 
         "amount": "9900",
         "currency": "INR",
         "name": "ભાગ્યવેદ (Bhagyaveda)",
