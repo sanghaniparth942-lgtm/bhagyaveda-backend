@@ -431,9 +431,16 @@
         return;
       }
 
-      // NOTE: Haman Test Key thi j payment success thashe karan ke taru Live Account haju approve nathi thayu.
+      // અગત્યનું: લાઈન નંબર 337 પર "YOUR_ACTUAL_RAZORPAY_TEST_KEY" ની જગ્યાએ તમારું સાચું Razorpay Key નાખો.
+      const myRazorpayKey = "YOUR_ACTUAL_RAZORPAY_TEST_KEY"; 
+
+      if (myRazorpayKey === "YOUR_ACTUAL_RAZORPAY_TEST_KEY") {
+        alert("ભૂલ: પેમેન્ટ ચાલુ કરવા માટે કૃપા કરીને કોડમાં (લાઇન ૩૩૭) તમારી સાચી Razorpay 'Test Key' ઉમેરો.");
+        return;
+      }
+
       var options = {
-        "key": "rzp_test_YOUR_TEST_KEY_HERE", // <-- Ahiya 'Test Key' muki de
+        "key": myRazorpayKey,
         "amount": "9900",
         "currency": "INR",
         "name": "Bhagyaveda",
@@ -451,7 +458,7 @@
         }
       };
 
-      var rzp1 = new Razorpay(options);
+      var rzp1 = new window.Razorpay(options);
       rzp1.on('payment.failed', function (response){
         console.error("Payment Error:", response.error);
         alert("પેમેન્ટ નિષ્ફળ થયું. મહેરબાની કરીને ફરી પ્રયાસ કરો.");
