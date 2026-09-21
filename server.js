@@ -17,7 +17,7 @@ app.get('/api/ping', (req, res) => {
   res.json({ status: "active", message: "Bhagyaveda Vedic Supercomputer Node is active." });
 });
 
-// ગાણિતિક હેશિંગ ફંક્શન - એક જ ડેટા પર ૧૦૦% સેમ અને અલગ ડેટા પર તદ્દન યુનિક પરિણામ માટે
+// ગાણિતિક હેશિંગ - ઇનપુટ ડેટા પ્રમાણે એક જ વ્યક્તિ માટે ૧૦૦% કન્સિસ્ટન્ટ રિઝલ્ટ
 function createDeterministicHash(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -104,7 +104,7 @@ app.post('/api/get-prediction', async (req, res) => {
     let response = null;
     let lastError = null;
 
-    // Retry Logic (Temperature 0 ensuring consistent results)
+    // Retry Logic (Temperature: 0 to ensure consistency on same inputs)
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         response = await ai.models.generateContent({
@@ -112,7 +112,7 @@ app.post('/api/get-prediction', async (req, res) => {
           contents: prompt,
           config: {
             responseMimeType: "application/json",
-            temperature: 0 // Exact same output for identical inputs
+            temperature: 0
           }
         });
 
