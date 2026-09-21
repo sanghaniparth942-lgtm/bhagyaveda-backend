@@ -90,10 +90,10 @@ app.post('/api/get-prediction', async (req, res) => {
       }
     `;
 
-    // ૫૦૩ હાઈ ડિમાન્ડથી બચવા માટે ઓટોમેટિક ૩ વખત Retry થશે
     let response = null;
     let lastError = null;
 
+    // Retry Logic (Paid priority સાથે 1st ટ્રાયમાં જ આવી જશે)
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         console.log(`Gemini API પ્રયાસ ${attempt}/3 ચાલુ છે...`);
@@ -114,7 +114,6 @@ app.post('/api/get-prediction', async (req, res) => {
         lastError = err;
         console.warn(`પ્રયાસ ${attempt} માં એરર આવી (${err.message})`);
         if (attempt < 3) {
-          console.log(`૨ સેકન્ડ રાહ જોઈને ફરી પ્રયાસ કરીએ છીએ...`);
           await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
         }
       }
@@ -150,7 +149,7 @@ app.post('/api/get-prediction', async (req, res) => {
   }
 });
 
-// ૧૦ એ ૧૦ ક્ષેત્રો માટે ગહન અને વિસ્તૃત ફોલબેક
+// ૧૦ એ ૧૦ ક્ષેત્રો માટે વિસ્તૃત ફોલબેક
 function generateDistinctFallback(name, naamRashi, suryaRashi, bhagyank, areas) {
   const areaContentMap = {
     "નોકરી અને કરિયર ગ્રોથ": {
