@@ -90,14 +90,39 @@ app.post('/api/get-prediction', async (req, res) => {
       }
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0 // Same data par 100% exact same result aavshe
+    // ૫૦૩ હાઈ ડિમાન્ડથી બચવા માટે ઓટોમેટિક ૩ વખત Retry થશે
+    let response = null;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`Gemini API પ્રયાસ ${attempt}/3 ચાલુ છે...`);
+        response = await ai.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+            temperature: 0
+          }
+        });
+
+        if (response && response.text) {
+          console.log("સફળતા: Gemini Live Data મળી ગયો!");
+          break;
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`પ્રયાસ ${attempt} માં એરર આવી (${err.message})`);
+        if (attempt < 3) {
+          console.log(`૨ સેકન્ડ રાહ જોઈને ફરી પ્રયાસ કરીએ છીએ...`);
+          await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+        }
       }
-    });
+    }
+
+    if (!response || !response.text) {
+      throw lastError || new Error("Gemini API તરફથી રિસ્પોન્સ મળ્યો નથી.");
+    }
 
     let rawText = response.text || "{}";
     rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -110,13 +135,18 @@ app.post('/api/get-prediction', async (req, res) => {
 
     res.json({
       success: true,
+      isGemini: true,
       data: aiData
     });
 
   } catch (error) {
     console.error("Gemini Error, using Dynamic Fallback:", error.message);
     const smartFallback = generateDistinctFallback(clientName, naamRashi, suryaRashi, bhagyank, areas);
-    res.json({ success: true, data: smartFallback });
+    res.json({
+      success: true,
+      isGemini: false,
+      data: smartFallback
+    });
   }
 });
 
